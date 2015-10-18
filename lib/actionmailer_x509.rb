@@ -108,14 +108,22 @@ module ActionMailer #:nodoc:
       # mail['Content-Type'] = 'text/plain'
       # mail.mime_version = nil
 
+      def smart_read(filename_or_cert)
+        if /^\A\s*-----.*-----\s*?\z/m =~ filename_or_cert
+          filename_or_cert
+        else
+          File::read(filename_or_cert)
+        end
+      end
+
       # We load certificate and private key
       if should_sign?
-        sign_cert = OpenSSL::X509::Certificate.new( File::read(@x509_sign_cert) )
-        sign_prv_key = OpenSSL::PKey::RSA.new( File::read(@x509_sign_key), @x509_sign_passphrase)
+        sign_cert = OpenSSL::X509::Certificate.new( smart_read(@x509_sign_cert) )
+        sign_prv_key = OpenSSL::PKey::RSA.new( smart_read(@x509_sign_key), @x509_sign_passphrase)
       end
 
       if should_crypt?
-        crypt_cert = OpenSSL::X509::Certificate.new( File::read(@x509_crypt_cert) )
+        crypt_cert = OpenSSL::X509::Certificate.new( smart_read(@x509_crypt_cert) )
         cipher = OpenSSL::Cipher.new(@x509_crypt_cipher)
       end
 
